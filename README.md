@@ -12,7 +12,7 @@ Fájlnév	Leírás
 | `topo.py`          | Mininet topológia H1 ↔ S1 ↔ H2, 2 porttal                                                        |
 | `run.sh`           | Teljes rendszerindítás: fordítás, switch indítás, Mininet indítás                                |
 
-Mi kell ahhoz, hogy működjön a RIFO rendszer?
+# Mi kell ahhoz, hogy működjön a RIFO rendszer?
 
 1. P4 toolchain
 
@@ -49,7 +49,7 @@ sudo make install
 pip3 install grpcio grpcio-tools protobuf scapy
 
 
-Futtatás lépései
+# Futtatás lépései
 
 1 Előkészítés
 
