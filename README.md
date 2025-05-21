@@ -12,6 +12,32 @@ Fájlnév	Leírás
 | `topo.py`          | Mininet topológia H1 ↔ S1 ↔ H2, 2 porttal                                                        |
 | `run.sh`           | Teljes rendszerindítás: fordítás, switch indítás, Mininet indítás                                |
 
+Mi kell ahhoz, hogy működjön a RIFO rendszer?
+
+1. P4 toolchain
+
+git clone https://github.com/p4lang/p4c.git
+cd p4c
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+sudo make install
+
+2. BMv2 (behavioral model v2)
+
+git clone https://github.com/p4lang/behavioral-model.git
+cd behavioral-model
+./install_deps.sh
+./autogen.sh
+./configure --with-p4runtime
+make -j$(nproc)
+sudo make install
+
+3. Python könyvtárak
+
+pip3 install grpcio grpcio-tools protobuf scapy
+
+
 Futtatás lépései
 
 1 Előkészítés
