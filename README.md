@@ -66,6 +66,8 @@ p4c-bm2-ss --target bmv2 --arch v1model \
   
 3 Switch és Mininet indítása
 
+chmod +x run.sh
+
 ./run.sh
 
 Ez elindítja:
