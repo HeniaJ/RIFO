@@ -17,20 +17,31 @@ Mi kell ahhoz, hogy működjön a RIFO rendszer?
 1. P4 toolchain
 
 git clone https://github.com/p4lang/p4c.git
+
 cd p4c
+
 mkdir build && cd build
+
 cmake ..
+
 make -j$(nproc)
+
 sudo make install
 
 2. BMv2 (behavioral model v2)
 
 git clone https://github.com/p4lang/behavioral-model.git
+
 cd behavioral-model
+
 ./install_deps.sh
+
 ./autogen.sh
+
 ./configure --with-p4runtime
+
 make -j$(nproc)
+
 sudo make install
 
 3. Python könyvtárak
