@@ -14,6 +14,8 @@
     },
     "switches": {
       "s1": {
+        "cli_input": "s1-commands.txt",
+        "program": "rifo.p4"
       }
     }
   }

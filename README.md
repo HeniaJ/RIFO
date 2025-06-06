@@ -1,34 +1,49 @@
 # RIFO
 
-1. futtatás
+## 1. futtatás
 ```
 sudo p4run
 ```
 
-2. csomagküldés (mininetben)
+## 2. csomagküldés
+
+külön terminálban:
 ```
-h1 python3 send_multiple.py
+mx h1
+```
+feljön h1 terminálja, akkor lehet:
+- ```python send_one.py```
+- ```python send_multiple.py```
+- ```python send_dynamic.py```
+
+## 3. csomag fogadás
+külön terminálban:
+```
+mx h2
+```
+feljön h2 terminálja, akkor lehet:
+```
+python receive_log.py
 ```
 
-3. csomag fogadás (mininetben)
-```
-h2 python3 h2_logger.py
-```
+***Mindegyik script futtatható mindegyik host-on, tehát ha h2-ről köldünk h1-re az is működik.***
+**A forwarding table úgy van beállítva, hogy h1 h2-re, h2 meg h1-re küldjön.**
 
-Fájlnév	Leírás
+
 | Fájlnév            | Leírás                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
 | `rifo.p4`          | Teljes P4 implementáció: header definíciók, RIFO logika (rangalapú drop/admit), regiszterkezelés |
-| `rifomod.py`    | Megpróbáltam táblával kezelni a portokat (kísérleti)                                 |
 | `send_one.py`   | Egy csomag küldése         |
-| `send_multiple.py` | Statikus rangú csomagok küldése H1 → H2 felé tesztelésre                                         |
+| `send_multiple.py` | Statikus rangú csomagok küldése egyik host-ról a másikra felé tesztelésre                                         |
 | `send_dynamic.py`  | (opcionális) Több száz véletlen rangú csomag küldése stresszteszthez                             |
-| `h2_logger.py`     | Fogadóoldali naplózó: H2-re érkező csomagok `rank` értékét kiírja                                |
+| `receive_log.py`     | Fogadóoldali naplózó: érkező csomagok `rank` értékét kiírja                                |
+| `config.log`          | Host beállítások küldéshez és fogadáshoz                                                       |
 | `p4app.json`          | Mininet topológia H1 ↔ S1 ↔ H2, 2 porttal                                                        |
+| `s1-commands.txt`          | Forwarding table-höz parancsok (mit hova küldjön)                                                    |
 | `log mappa`           | Logok                                |
 
 
-# Szerintem ez nem kell, ami ez után van:
+# Ez nem kell, ami ez után van:
 
 Fájlnév	Leírás
 | Fájlnév            | Leírás                                                                                           |
