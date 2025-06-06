@@ -1,5 +1,35 @@
 # RIFO
 
+1. futtatás
+```
+sudo p4run
+```
+
+2. csomagküldés (mininetben)
+```
+h1 python3 send_multiple.py
+```
+
+3. csomag fogadás (mininetben)
+```
+h2 python3 h2_logger.py
+```
+
+Fájlnév	Leírás
+| Fájlnév            | Leírás                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| `rifo.p4`          | Teljes P4 implementáció: header definíciók, RIFO logika (rangalapú drop/admit), regiszterkezelés |
+| `rifomod.py`    | Megpróbáltam táblával kezelni a portokat (kísérleti)                                 |
+| `send_one.py`   | Egy csomag küldése         |
+| `send_multiple.py` | Statikus rangú csomagok küldése H1 → H2 felé tesztelésre                                         |
+| `send_dynamic.py`  | (opcionális) Több száz véletlen rangú csomag küldése stresszteszthez                             |
+| `h2_logger.py`     | Fogadóoldali naplózó: H2-re érkező csomagok `rank` értékét kiírja                                |
+| `p4app.json`          | Mininet topológia H1 ↔ S1 ↔ H2, 2 porttal                                                        |
+| `log mappa`           | Logok                                |
+
+
+# Szerintem ez nem kell, ami ez után van:
+
 Fájlnév	Leírás
 | Fájlnév            | Leírás                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------ |

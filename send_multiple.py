@@ -14,6 +14,7 @@ ranks = [10, 50, 100, 150, 200]
 
 for r in ranks:
     pkt = Ether() / IP(dst="10.0.0.2") / RIFO(rank=r) / Raw(load=f"Test rank={r}")
+    print(pkt.show())
     sendp(pkt, iface=iface, verbose=False)
     print(f"Sent packet with rank={r}")
     time.sleep(0.5)

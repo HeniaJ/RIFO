@@ -23,7 +23,7 @@ def main():
 if __name__ == '__main__':
     main()
  """
- 
+
 import grpc
 from p4.v1 import p4runtime_pb2, p4runtime_pb2_grpc
 from p4.config.v1 import p4info_pb2
@@ -32,7 +32,10 @@ from google.protobuf import text_format
 
 def read_p4info(path):
     with open(path, 'r') as f:
-        return text_format.Parse(f.read(), p4info_pb2.P4Info())
+        text = f.read()
+        p4info = p4info_pb2.P4Info()
+        text_format.Merge(text, p4info, allow_unknown_field=True)
+        return p4info
 
 def main():
     # 1. Csatlakozás a switch-hez
@@ -66,7 +69,6 @@ def main():
 if __name__ == '__main__':
     main()
     
-
 """ 
 import grpc
 from p4.v1 import p4runtime_pb2, p4runtime_pb2_grpc
@@ -115,3 +117,68 @@ def main():
 if __name__ == '__main__':
     main()
  """
+"""
+import grpc
+import threading
+import queue
+import time
+
+from p4.v1 import p4runtime_pb2, p4runtime_pb2_grpc
+from p4.config.v1 import p4info_pb2
+from google.protobuf import text_format
+
+PRIMARY_GRANTED = queue.Queue()
+
+def read_p4info(path):
+    with open(path, 'r') as f:
+        return text_format.Parse(f.read(), p4info_pb2.P4Info())
+
+def stream_channel(stub, election_id=1):
+    def requests():
+        req = p4runtime_pb2.StreamMessageRequest()
+        req.arbitration.device_id = 0
+        req.arbitration.election_id.low = election_id
+        yield req
+        while True:
+            time.sleep(1)
+
+    responses = stub.StreamChannel(requests())
+    for resp in responses:
+        if resp.HasField("arbitration"):
+            print("Arbitration response:", resp)
+            if resp.arbitration.status.code == 0:
+                print("✅ Te vagy a PRIMARY, mehet tovább.")
+                PRIMARY_GRANTED.put(True)
+            else:
+                print("❌ Nem vagy PRIMARY.")
+
+def main():
+    channel = grpc.insecure_channel('127.0.0.1:50051')
+    stub = p4runtime_pb2_grpc.P4RuntimeStub(channel)
+
+    # Indítsd el a StreamChannel-t
+    t = threading.Thread(target=stream_channel, args=(stub,))
+    t.daemon = True
+    t.start()
+
+    print("⏳ Várakozás, amíg PRIMARY leszel...")
+    PRIMARY_GRANTED.get(timeout=5)  # Megvárja amíg a szerver visszaigazolja
+
+    # Most már tényleg PRIMARY vagy
+    p4info = read_p4info("rifo.p4info.txt")
+    with open("rifo.json", "rb") as f:
+        device_config = f.read()
+
+    set_pipeline_req = p4runtime_pb2.SetForwardingPipelineConfigRequest()
+    set_pipeline_req.device_id = 0
+    set_pipeline_req.role_id = 0
+    set_pipeline_req.action = p4runtime_pb2.SetForwardingPipelineConfigRequest.VERIFY_AND_COMMIT
+    set_pipeline_req.config.p4info.CopyFrom(p4info)
+    set_pipeline_req.config.p4_device_config = device_config
+
+    stub.SetForwardingPipelineConfig(set_pipeline_req)
+    print("✅ Pipeline sikeresen betöltve.")
+
+if __name__ == '__main__':
+    main()
+"""

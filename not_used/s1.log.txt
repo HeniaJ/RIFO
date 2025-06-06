@@ -1,0 +1,19 @@
+[16:42:31.050] [bmv2] [D] [thread 153722] Set default default entry for table 'MyIngress.dmac': NoAction - 
+[16:42:31.050] [bmv2] [D] [thread 153722] Set default default entry for table 'tbl_rifo118': rifo118 - 
+[16:42:31.063] [bmv2] [I] [thread 153722] Starting Thrift server on port 9090
+[16:42:31.063] [bmv2] [I] [thread 153722] Thrift server was started
+[16:54:10.662] [bmv2] [D] [thread 154816] Set default default entry for table 'MyIngress.dmac': NoAction - 
+[16:54:10.662] [bmv2] [D] [thread 154816] Set default default entry for table 'tbl_rifo118': rifo118 - 
+[16:54:10.670] [bmv2] [I] [thread 154816] Starting Thrift server on port 9090
+[16:54:10.670] [bmv2] [I] [thread 154816] Thrift server was started
+[11:58:58.338] [bmv2] [D] [thread 158280] Set default default entry for table 'MyIngress.dmac': NoAction - 
+[11:58:58.338] [bmv2] [D] [thread 158280] Set default default entry for table 'tbl_rifo118': rifo118 - 
+[11:58:58.346] [bmv2] [I] [thread 158280] Starting Thrift server on port 9090
+[11:58:58.347] [bmv2] [I] [thread 158280] Thrift server was started
+[12:02:18.007] [bmv2] [D] [thread 158631] Set default default entry for table 'MyIngress.dmac': NoAction - 
+[12:02:18.007] [bmv2] [D] [thread 158631] Set default default entry for table 'tbl_rifo117': rifo117 - 
+[12:02:18.015] [bmv2] [I] [thread 158631] Starting Thrift server on port 9090
+[12:02:18.016] [bmv2] [I] [thread 158631] Thrift server was started
+[12:27:35.832] [bmv2] [D] [thread 159152] Set default default entry for table 'tbl_admit': MyIngress.admit - 
+[12:27:35.842] [bmv2] [I] [thread 159152] Starting Thrift server on port 9090
+[12:27:35.842] [bmv2] [I] [thread 159152] Thrift server was started

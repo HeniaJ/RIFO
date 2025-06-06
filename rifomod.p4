@@ -9,9 +9,6 @@ typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 
-const bit<9> PORT1 = 1;
-const bit<9> PORT2 = 2;
-
 header ethernet_t {
     bit<48> dstAddr;
     bit<48> srcAddr;
@@ -78,16 +75,6 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         reg_min.write(0, rank);
     }
 
-    action admit() {
-        if (standard_metadata.ingress_port == PORT1) {
-            standard_metadata.egress_spec = PORT2;
-        } else if (standard_metadata.ingress_port == PORT2) {
-            standard_metadata.egress_spec = PORT1;
-        } else {
-            mark_to_drop(standard_metadata);
-        }
-    }
-
     action update_max(bit<16> rank) {
         reg_max.write(0, rank);
     }
@@ -109,12 +96,27 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         mark_to_drop(standard_metadata);
     }
 
+    action forward(bit<9> egress_port) {
+        standard_metadata.egress_spec = egress_port;
+    }
+
+    table dmac {
+        key = {
+            hdr.ethernet.dstAddr: exact;
+        }
+
+        actions = {
+            forward;
+            NoAction;
+        }
+        size = 256;
+    }
+
     apply {
-        //!!!FONTOS!!!
-        //Itt most jelenleg minden admitolva van, hoyg először működjön a hálózat
-        //utána lehet tesztelni magának a rifonak a logikáját
-        //Ilyenkor törölni kell a következő 2 sort
-        admit();
+        dmac.apply();
+        reg_min.write(0, 6);
+        reg_debug.write(0, 6);
+        reg_debug.write(0, 42);
         return;
 
         bit<16> count;
@@ -148,15 +150,15 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bit<32> range_expr = (bit<32>)range_val * (bit<32>)available;
 
         if (queue_len <= (bit<19>)kB) {
-            admit();
+            dmac.apply();
         } else if (range_val != 0) {
             if (rank_expr <= range_expr) {
-                admit();
+                dmac.apply();
             } else {
                 drop();
             }
         } else {
-            admit();
+            dmac.apply();
         }
 
 

@@ -1,46 +1,14 @@
+# proto-file: p4/config/v1/p4info.proto
+# proto-message: p4.config.v1.P4Info
+
 pkg_info {
   arch: "v1model"
-}
-actions {
-  preamble {
-    id: 17024418
-    name: "MyIngress.update_min"
-    alias: "update_min"
-  }
-}
-actions {
-  preamble {
-    id: 29508978
-    name: "MyIngress.update_max"
-    alias: "update_max"
-  }
-}
-actions {
-  preamble {
-    id: 32503234
-    name: "MyIngress.reset_min_max"
-    alias: "reset_min_max"
-  }
-}
-actions {
-  preamble {
-    id: 30104446
-    name: "MyIngress.increment_counter"
-    alias: "increment_counter"
-  }
 }
 actions {
   preamble {
     id: 27712443
     name: "MyIngress.admit"
     alias: "admit"
-  }
-}
-actions {
-  preamble {
-    id: 25652968
-    name: "MyIngress.drop"
-    alias: "drop"
   }
 }
 registers {
@@ -78,6 +46,21 @@ registers {
     id: 370925972
     name: "MyIngress.reg_count"
     alias: "reg_count"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 16
+      }
+    }
+  }
+  size: 1
+}
+registers {
+  preamble {
+    id: 371576492
+    name: "MyIngress.reg_debug"
+    alias: "reg_debug"
   }
   type_spec {
     bitstring {
