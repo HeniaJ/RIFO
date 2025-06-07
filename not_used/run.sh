@@ -14,9 +14,10 @@ sudo pkill -9 simple_switch_grpc || true
 # SWITCH indítása P4 pipeline-nal, gRPC-vel
 simple_switch_grpc \
   --device-id 0 \
-  --log-console \
-  -- --grpc-server-addr 127.0.0.1:50051 \
-  rifo.json &
+  --log-file s1.log \
+  --log-level debug \
+  rifo.json \
+  -- --grpc-server-addr 127.0.0.1:50051 &
 sleep 2
 
 # Mininet topológia indítása

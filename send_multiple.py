@@ -1,19 +1,19 @@
 from scapy.all import Ether, IP, sendp, Raw
-from scapy.packet import Packet, bind_layers
-from scapy.fields import ShortField
+from scapy.packet import bind_layers
 import time
-
-class RIFO(Packet):
-    name = "RIFO"
-    fields_desc = [ShortField("rank", 0)]
+from config import get_network_config, RIFO
 
 bind_layers(IP, RIFO)
-
-iface = "h1-eth0"
-ranks = [10, 50, 100, 150, 200]
+cfg = get_network_config()
+iface = cfg["iface"]
+ranks = [10, 11, 9, 15, 4]
 
 for r in ranks:
-    pkt = Ether() / IP(dst="10.0.0.2") / RIFO(rank=r) / Raw(load=f"Test rank={r}")
+    pkt = Ether(src=cfg["src_mac"], dst=cfg["dst_mac"]) / \
+          IP(src=cfg["src_ip"], dst=cfg["dst_ip"]) / \
+          RIFO(rank=r) / \
+          Raw(load=f"Test rank={r}")
+
     sendp(pkt, iface=iface, verbose=False)
     print(f"Sent packet with rank={r}")
     time.sleep(0.5)

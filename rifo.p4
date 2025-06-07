@@ -5,6 +5,14 @@
 
 const bit<16> ETYPE_IPV4 = 0x0800;
 
+typedef bit<9>  egressSpec_t;
+typedef bit<48> macAddr_t;
+typedef bit<32> ip4Addr_t;
+
+const bit<8> B = 4;
+const bit<8> kB = 2;
+const bit<16> T = 100;
+
 header ethernet_t {
     bit<48> dstAddr;
     bit<48> srcAddr;
@@ -57,23 +65,21 @@ parser MyParser(packet_in packet, out headers hdr, inout metadata meta, inout st
 }
 
 control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata) {
-
-    const bit<8> B = 20;
-    const bit<8> kB = 2;
-    const bit<16> T = 100;
-
     register<bit<16>>(1) reg_min;
     register<bit<16>>(1) reg_max;
     register<bit<16>>(1) reg_count;
 
     action update_min(bit<16> rank) {
-    reg_min.write(0, rank);
+        reg_min.write(0, rank);
+    }
+
+    action forward(egressSpec_t port) {
+        standard_metadata.egress_spec = port;
     }
 
     action update_max(bit<16> rank) {
         reg_max.write(0, rank);
     }
-
 
     action reset_min_max(bit<16> rank) {
         reg_min.write(0, rank);
@@ -87,36 +93,58 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         reg_count.write(0, c + 1);
     }
 
-    action admit() {
-        standard_metadata.egress_spec = 1;
-    }
-
     action drop() {
         mark_to_drop(standard_metadata);
+    }
 
+    table mac_forward {
+        key = {
+            hdr.ethernet.dstAddr: exact;
+        }
+        actions = {
+            forward;
+            drop;
+            NoAction;
+        }
+        size = 1024;
+    }
+
+    action admit() {
+        
     }
 
     apply {
+        //!!!FONTOS!!!
+        //Itt most jelenleg minden admitolva van, hoyg először működjön a hálózat
+        //utána lehet tesztelni magának a rifonak a logikáját
+        //Ilyenkor törölni kell a következő 2 sort
+        //mac_forward.apply();
+        //return;
+
         bit<16> count;
         reg_count.read(count, 0);
-
-        if (count >= T) {
-            reset_min_max(hdr.rifo.rank);
-        } else {
-            increment_counter();
-        }
 
         bit<16> min_rank;
         bit<16> max_rank;
         reg_min.read(min_rank, 0);
         reg_max.read(max_rank, 0);
 
-        
-        if (hdr.rifo.rank < min_rank) {
-            update_min(hdr.rifo.rank);
+        if (count >= T) {
+            reset_min_max(hdr.rifo.rank);
+        } else {
+            if (hdr.rifo.rank < min_rank) {
+                update_min(hdr.rifo.rank);
+            }
+            if (hdr.rifo.rank > max_rank) {
+                update_max(hdr.rifo.rank);
+            }
+
+            increment_counter();
         }
-        if (hdr.rifo.rank > max_rank) {
-            update_max(hdr.rifo.rank);
+
+        if(max_rank == min_rank) {
+            mac_forward.apply();
+            return;
         }
 
         bit<19> queue_len = standard_metadata.deq_qdepth;
@@ -128,18 +156,16 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bit<32> range_expr = (bit<32>)range_val * (bit<32>)available;
 
         if (queue_len <= (bit<19>)kB) {
-            admit();
+            mac_forward.apply();
         } else if (range_val != 0) {
             if (rank_expr <= range_expr) {
-                admit();
+                mac_forward.apply();
             } else {
                 drop();
             }
         } else {
-            admit();
+            drop();
         }
-
-
     }
 }
 
