@@ -1,7 +1,6 @@
-from scapy.all import sniff, Raw, Packet, bind_layers
-from scapy.fields import ShortField
+from scapy.all import sniff, Raw, Packet, ShortField
 from scapy.layers.inet import IP
-from config import get_network_config
+from scapy.packet import bind_layers
 
 class RIFO(Packet):
     name = "RIFO"
@@ -11,9 +10,8 @@ bind_layers(IP, RIFO)
 
 def handle(pkt):
     if RIFO in pkt:
-        print(f"Received packet with rank={pkt[RIFO].rank}")
+        print(f"Received RIFO rank = {pkt[RIFO].rank}")
     else:
-        print("Received packet without RIFO header")
+        print("Packet has no rank field")
 
-cfg = get_network_config()
-sniff(iface=cfg["iface"], prn=handle)
+sniff(iface="h2-eth0", prn=handle)

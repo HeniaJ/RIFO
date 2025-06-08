@@ -114,12 +114,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     }
 
     apply {
-        //!!!FONTOS!!!
-        //Itt most jelenleg minden admitolva van, hoyg először működjön a hálózat
-        //utána lehet tesztelni magának a rifonak a logikáját
-        //Ilyenkor törölni kell a következő 2 sort
-        //mac_forward.apply();
-        //return;
+        bit<1> forward_packet = 0;
 
         bit<16> count;
         reg_count.read(count, 0);
@@ -138,35 +133,36 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             if (hdr.rifo.rank > max_rank) {
                 update_max(hdr.rifo.rank);
             }
-
             increment_counter();
         }
 
-        if(max_rank == min_rank) {
-            mac_forward.apply();
-            return;
+        if (max_rank == min_rank) {
+            forward_packet = 1;
+        } else {
+            bit<19> queue_len = standard_metadata.deq_qdepth;
+            bit<19> available = (bit<19>)B - queue_len;
+            bit<16> rank_diff = hdr.rifo.rank - min_rank;
+            bit<16> range_val = max_rank - min_rank;
+
+            bit<32> rank_expr = (bit<32>)rank_diff * (bit<32>)B;
+            bit<32> range_expr = (bit<32>)range_val * (bit<32>)available;
+
+            if (queue_len <= (bit<19>)kB) {
+                forward_packet = 1;
+            } else if (range_val != 0) {
+                if (rank_expr <= range_expr) {
+                    forward_packet = 1;
+                }
+            }
         }
 
-        bit<19> queue_len = standard_metadata.deq_qdepth;
-        bit<19> available = (bit<19>)B - queue_len;
-        bit<16> rank_diff = hdr.rifo.rank - min_rank;
-        bit<16> range_val = max_rank - min_rank;
-
-        bit<32> rank_expr = (bit<32>)rank_diff * (bit<32>)B;
-        bit<32> range_expr = (bit<32>)range_val * (bit<32>)available;
-
-        if (queue_len <= (bit<19>)kB) {
+        if (forward_packet == 1) {
             mac_forward.apply();
-        } else if (range_val != 0) {
-            if (rank_expr <= range_expr) {
-                mac_forward.apply();
-            } else {
-                drop();
-            }
         } else {
             drop();
         }
     }
+
 }
 
 control MyEgress(inout headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata) {
