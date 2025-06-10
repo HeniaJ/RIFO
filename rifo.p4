@@ -13,6 +13,8 @@ const bit<8> B = 4;
 const bit<8> kB = 2;
 const bit<16> T = 100;
 
+register<bit<8>>(1) queue_length;
+
 header ethernet_t {
     bit<48> dstAddr;
     bit<48> srcAddr;
@@ -69,12 +71,11 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     register<bit<16>>(1) reg_max;
     register<bit<16>>(1) reg_count;
 
+    const bit<16> INIT_MIN = 0xFFFF;
+    const bit<16> INIT_MAX = 0x0000;
+
     action update_min(bit<16> rank) {
         reg_min.write(0, rank);
-    }
-
-    action forward(egressSpec_t port) {
-        standard_metadata.egress_spec = port;
     }
 
     action update_max(bit<16> rank) {
@@ -95,6 +96,17 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
     action drop() {
         mark_to_drop(standard_metadata);
+    }
+
+    action increment_queue() {
+        bit<8> len;
+        queue_length.read(len, 0);
+        queue_length.write(0, len + 1);
+    }
+
+    action forward(egressSpec_t port) {
+        increment_queue();
+        standard_metadata.egress_spec = port;
     }
 
     table mac_forward {
@@ -119,6 +131,11 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bit<16> count;
         reg_count.read(count, 0);
 
+        if (count == 0) {
+            reg_min.write(0, INIT_MIN);
+            reg_max.write(0, INIT_MAX);
+        }
+
         bit<16> min_rank;
         bit<16> max_rank;
         reg_min.read(min_rank, 0);
@@ -136,18 +153,21 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             increment_counter();
         }
 
+        reg_min.read(min_rank, 0);
+        reg_max.read(max_rank, 0);
         if (max_rank == min_rank) {
             forward_packet = 1;
         } else {
-            bit<19> queue_len = standard_metadata.deq_qdepth;
-            bit<19> available = (bit<19>)B - queue_len;
+            bit<8> queue_len;
+            queue_length.read(queue_len, 0);
+            bit<8> available = (bit<8>)B - queue_len;
             bit<16> rank_diff = hdr.rifo.rank - min_rank;
             bit<16> range_val = max_rank - min_rank;
 
             bit<32> rank_expr = (bit<32>)rank_diff * (bit<32>)B;
             bit<32> range_expr = (bit<32>)range_val * (bit<32>)available;
 
-            if (queue_len <= (bit<19>)kB) {
+            if (queue_len <= (bit<8>)kB) {
                 forward_packet = 1;
             } else if (range_val != 0) {
                 if (rank_expr <= range_expr) {
@@ -166,7 +186,17 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 }
 
 control MyEgress(inout headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata) {
-    apply { }
+    action decrement_queue() {
+        bit<8> len;
+        queue_length.read(len, 0);
+        if (len > 0) {
+            queue_length.write(0, len - 1);
+        }
+    }
+
+    apply { 
+        decrement_queue();
+    }
 }
 
 control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
