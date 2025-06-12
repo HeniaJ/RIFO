@@ -8,10 +8,17 @@ class RIFO(Packet):
 
 bind_layers(IP, RIFO)
 
+# Számláló beállítása
+counter = 0
+
 def handle(pkt):
-    if RIFO in pkt:
-        print(f"Received RIFO rank = {pkt[RIFO].rank}")
-    else:
-        print("Packet has no rank field")
+    global counter
+    
+    if RIFO in pkt and pkt[IP].src != "10.0.1.2":
+        counter += 1
+        rank = pkt[RIFO].rank
+        src = pkt[IP].src
+        dst = pkt[IP].dst
+        print(f"[{counter}] Received rank={rank} from {src} -> {dst}")
 
 sniff(iface="h2-eth0", prn=handle)

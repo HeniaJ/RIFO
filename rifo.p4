@@ -9,8 +9,8 @@ typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 
-const bit<8> B = 4;
-const bit<8> kB = 2;
+const bit<8> B = 2;
+const bit<8> kB = 1;
 const bit<16> T = 100;
 
 register<bit<8>>(1) queue_length;
@@ -189,10 +189,14 @@ control MyEgress(inout headers hdr, inout metadata meta, inout standard_metadata
     action decrement_queue() {
         bit<8> len;
         queue_length.read(len, 0);
-        if (len > 0) {
-            queue_length.write(0, len - 1);
+        bit<8> new_len;
+        if (len == 0) {
+            new_len = 0;
+        } else {
+            new_len = len - 1;
         }
-    }
+        queue_length.write(0, new_len);
+        }
 
     apply { 
         decrement_queue();

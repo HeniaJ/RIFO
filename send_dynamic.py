@@ -7,7 +7,7 @@ from config import get_network_config, RIFO
 bind_layers(IP, RIFO)
 cfg = get_network_config()
 
-for i in range(5000):
+for i in range(100):
     rank = random.randint(0, 6000)
     pkt = Ether(src=cfg["src_mac"], dst=cfg["dst_mac"]) / \
           IP(src=cfg["src_ip"], dst=cfg["dst_ip"]) / \
