@@ -1,11 +1,7 @@
 from scapy.all import sniff, Raw, Packet, ShortField
 from scapy.layers.inet import IP
 from scapy.packet import bind_layers
-from config import get_network_config
-
-class RIFO(Packet):
-    name = "RIFO"
-    fields_desc = [ShortField("rank", 0)]
+from config import get_network_config, RIFO
 
 bind_layers(IP, RIFO)
 cfg = get_network_config()
