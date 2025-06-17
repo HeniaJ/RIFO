@@ -15,5 +15,5 @@ for i in range(100):
           Raw(load=f"Random rank={rank}")
 
     sendp(pkt, iface=cfg["iface"], verbose=False)
-    print(f"[{i}] Sent packet with rank={rank}")
+    print(f"[{i}] Packet sent with rank={rank} from {cfg['src_ip']} -> {cfg['dst_ip']} on {cfg['iface']}")
     #sleep(0.05)
