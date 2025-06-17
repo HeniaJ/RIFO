@@ -8,7 +8,7 @@ bind_layers(IP, RIFO)
 cfg = get_network_config()
 
 for i in range(100):
-    rank = random.randint(0, 255)
+    rank = random.randint(0, 6000)
     pkt = Ether(src=cfg["src_mac"], dst=cfg["dst_mac"]) / \
           IP(src=cfg["src_ip"], dst=cfg["dst_ip"]) / \
           RIFO(rank=rank) / \
@@ -16,4 +16,4 @@ for i in range(100):
 
     sendp(pkt, iface=cfg["iface"], verbose=False)
     print(f"[{i}] Sent packet with rank={rank}")
-    sleep(0.05)
+    #sleep(0.05)
