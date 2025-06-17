@@ -17,4 +17,4 @@ def handle(pkt):
         dst = pkt[IP].dst
         print(f"[{counter}] Packet received with rank={rank} from {src} -> {dst} on {cfg['iface']}")
 
-sniff(iface=cfg["iface"], prn=handle)
+sniff(iface=cfg["iface"], prn=handle, store=0)
