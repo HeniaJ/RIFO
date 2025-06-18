@@ -9,8 +9,8 @@ typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 
-const bit<8> B = 2;
-const bit<8> kB = 1;
+const bit<8> B = 5;
+const bit<8> kB = 3;
 const bit<16> T = 100;
 
 register<bit<8>>(1) queue_length;
@@ -119,10 +119,6 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             NoAction;
         }
         size = 1024;
-    }
-
-    action admit() {
-        
     }
 
     apply {

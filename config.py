@@ -12,7 +12,7 @@ def get_network_config():
             "dst_mac": "00:00:0a:00:01:01" if i != 1 else "00:00:0a:00:01:02",
             "src_ip": f"10.0.1.{i}",
             "dst_ip": "10.0.1.1" if i != 1 else "10.0.1.2"
-        } for i in range(1, 51)
+        } for i in range(1, 11)
     }
 
     for iface in interfaces:
