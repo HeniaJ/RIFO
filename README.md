@@ -1,5 +1,11 @@
 # RIFO
 
+## Alap működés
+* rang alapú osztályozás --> minden csomag kap egy rangot
+* RIFO a rangokat relatív rangokra alakítja át, megbecsüli hogy "nagy", "kicsi" vagy "közepes"
+* normalizálás: megvizsgálja hogy a kapott csomag rangja hol helyezkedik el az eddigiekhez képest
+* extra mezőre van szükség a csomag fejlécében: RIFO fejléc ami tárolja a rangot
+
 ## 1. futtatás
 ```
 sudo p4run
@@ -34,6 +40,49 @@ A sender scriptek úgy vannak beállítva, hogy hi (i=2..10) host a h1-re küldj
 A következő script h1 hoston elindítja a ```receive_log.py```-t és a kapott csomagokat kiírja a terminálba és a script_run/receiver.log fájlba. Ezenkívül elindítja a h2...h10 hostokon a ```send_dynamic.py```-t, és az elküldött csomagokat kiírja a terminálba és a script_run/sender_hi.log fájlokba.
 ```
 ./run_more_hosts.sh
+```
+
+## 5. RIFO döntési logika
+
+* döntés témája: kapott csomagot a program beengedje-e a sorba továbbküldésre
+* elv: alacsonyabb rangú csomagok előnyben
+   * ha a sorban van elég hely magasabb rangú csomagot is beenged
+   * ha a sor megtelik a magasabb rangú csomagokat dobja el
+
+## 6. Algoritmus működése
+
+![image](https://github.com/user-attachments/assets/0f9014af-e817-43ab-83c7-6561c90abbda)
+
+#### 6.1 Tracking
+legutóbbi rangok nyomonkövetése \
+reg_min, reg_max tárolják az eddigi legkisebb és legnagyobb rangokat \
+ezek időnként újrainicializálódnak az adatok frissentartása érdekében
+```
+action reset_min_max(bit<16> rank) {
+        reg_min.write(0, rank);
+        reg_max.write(0, rank);
+        reg_count.write(0, 1);
+    }
+```
+
+#### 6.2 Scoring
+pontszám számolása
+```
+bit<16> rank_diff = hdr.rifo.rank - min_rank;
+bit<16> range_val = max_rank - min_rank;
+```
+csomag rangjának tartományon belüli pozíciójának kiszámolásához \
+sor kapacitásának meghatározása
+* max kapacitás = B
+* kihasználtság = L
+```
+const bit<8> B = 5;
+register<bit<8>>(1) queue_length; //aktualis sorhossz (kihasználtság)
+```
+Garantált beengedési puffer: \
+sor elejéből egy kis rész mindig fenn van tartva azonnali beengedésre (k*B)
+```
+const bit<8> kB = 3;
 ```
 
 ### Hostok száma: 10 
