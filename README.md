@@ -1,17 +1,17 @@
 # RIFO
 
-## Alap működés
-* rang alapú osztályozás --> minden csomag kap egy rangot
-* RIFO a rangokat relatív rangokra alakítja át, megbecsüli hogy "nagy", "kicsi" vagy "közepes"
-* normalizálás: megvizsgálja hogy a kapott csomag rangja hol helyezkedik el az eddigiekhez képest
-* extra mezőre van szükség a csomag fejlécében: RIFO fejléc ami tárolja a rangot
+## 1. Alap működés
+* Rang alapú osztályozás --> minden csomag kap egy rangot.
+* RIFO a rangokat relatív rangokra alakítja át, megbecsüli hogy "nagy", "kicsi" vagy "közepes".
+* Normalizálás: megvizsgálja hogy a kapott csomag rangja hol helyezkedik el az eddigiekhez képest.
+* Extra mezőre van szükség a csomag fejlécében: RIFO fejléc ami tárolja a rangot.
 
-## 1. futtatás
+## 2. Futtatás
 ```
 sudo p4run
 ```
 
-## 2. csomag fogadás
+## 3. Csomag fogadás
 
 Külön terminálban h1 megnyitása:
 ```
@@ -22,7 +22,7 @@ Amikor feljön h1 terminálja, akkor futtathatjuk a csomag fogadáshoz:
 python receive_log.py
 ```
 
-## 3. csomag küldés
+## 4. Csomag küldés
 
 Külön terminálban h2 megnyitása:
 ```
@@ -35,28 +35,28 @@ Amikor feljön h2 terminálja, futtathatjuk a csomag küldéshez:
 
 A sender scriptek úgy vannak beállítva, hogy hi (i=2..10) host a h1-re küldjön csomagokat, h1 pedig h2-re. ***Mindegyik script futtatható mindegyik host-on, tehát ha h2-ről köldünk h1-re az is működik.***
 
-## 4. fogadás és küldés
+## 5. Fogadás és küldés
 
 A következő script h1 hoston elindítja a ```receive_log.py```-t és a kapott csomagokat kiírja a terminálba és a script_run/receiver.log fájlba. Ezenkívül elindítja a h2...h10 hostokon a ```send_dynamic.py```-t, és az elküldött csomagokat kiírja a terminálba és a script_run/sender_hi.log fájlokba.
 ```
 ./run_more_hosts.sh
 ```
 
-## 5. RIFO döntési logika
+## 6. RIFO döntési logika
 
-* döntés témája: kapott csomagot a program beengedje-e a sorba továbbküldésre
-* elv: alacsonyabb rangú csomagok előnyben
-   * ha a sorban van elég hely magasabb rangú csomagot is beenged
-   * ha a sor megtelik a magasabb rangú csomagokat dobja el
+* Döntés témája: kapott csomagot a program beengedje-e a sorba továbbküldésre.
+* Elv: alacsonyabb rangú csomagok előnyben.
+   * Ha a sorban van elég hely magasabb rangú csomagot is beenged.
+   * Ha a sor megtelik a magasabb rangú csomagokat dobja el.
 
-## 6. Algoritmus működése
+## 7. Algoritmus működése
 
 ![image](https://github.com/user-attachments/assets/0f9014af-e817-43ab-83c7-6561c90abbda)
 
 #### 6.1 Tracking
-legutóbbi rangok nyomonkövetése \
-reg_min, reg_max tárolják az eddigi legkisebb és legnagyobb rangokat \
-ezek időnként újrainicializálódnak az adatok frissentartása érdekében
+Legutóbbi rangok nyomonkövetése. \
+reg_min, reg_max tárolják az eddigi legkisebb és legnagyobb rangokat. \
+Ezek időnként újrainicializálódnak az adatok frissentartása érdekében.
 ```
 action reset_min_max(bit<16> rank) {
         reg_min.write(0, rank);
@@ -66,13 +66,12 @@ action reset_min_max(bit<16> rank) {
 ```
 
 #### 6.2 Scoring
-pontszám számolása
+Pontszám számolása
 ```
 bit<16> rank_diff = hdr.rifo.rank - min_rank;
 bit<16> range_val = max_rank - min_rank;
 ```
-csomag rangjának tartományon belüli pozíciójának kiszámolásához \
-sor kapacitásának meghatározása
+Csomag rangjának tartományon belüli pozíciójának kiszámolásához sor kapacitásának meghatározása
 * max kapacitás = B
 * kihasználtság = L
 ```
@@ -80,7 +79,7 @@ const bit<8> B = 5;
 register<bit<8>>(1) queue_length; //aktualis sorhossz (kihasználtság)
 ```
 Garantált beengedési puffer: \
-sor elejéből egy kis rész mindig fenn van tartva azonnali beengedésre (k*B)
+Sor elejéből egy kis rész mindig fenn van tartva azonnali beengedésre (k*B).
 ```
 const bit<8> kB = 3;
 ```
@@ -112,7 +111,7 @@ Elküldött csomag:
 
 A ```send_dynamic.py``` és a ```receive_log.py``` számon tartják, hogy mennyi csomagot küldtek, és fogadtak, így például ha 9*100=900 csomagot elküldött 9 host, és 870 érkezett meg, akkor 30-at eldobtunk, mert túl magas volt a rangja.
 
-## Fájlok
+## 8. Fájlok
 
 | Fájlnév            | Leírás                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
