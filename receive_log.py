@@ -1,24 +1,24 @@
 from scapy.all import sniff, Raw, Packet, ShortField
 from scapy.layers.inet import IP
 from scapy.packet import bind_layers
+from config import get_network_config, RIFO
 
-class RIFO(Packet):
-    name = "RIFO"
-    fields_desc = [ShortField("rank", 0)]
+# halozati forgalom figyelese
 
 bind_layers(IP, RIFO)
-
-# Számláló beállítása
+cfg = get_network_config()
 counter = 0
 
 def handle(pkt):
     global counter
-    
-    if RIFO in pkt and pkt[IP].src != "10.0.1.2":
+
+    # csomag infok kiirasa monitorozashoz
+    if RIFO in pkt and pkt[IP].src != cfg["src_ip"]:
         counter += 1
         rank = pkt[RIFO].rank
         src = pkt[IP].src
         dst = pkt[IP].dst
-        print(f"[{counter}] Received rank={rank} from {src} -> {dst}")
+        print(f"[{counter}] Packet received with rank={rank} from {src} -> {dst} on {cfg['iface']}")
 
-sniff(iface="h2-eth0", prn=handle)
+# csomagfigyeles elinditasa
+sniff(iface=cfg["iface"], prn=handle, store=0, timeout=100)

@@ -1,5 +1,6 @@
 log/
 __pycache__/
+script_run/
 rifo.json
 topology.json
 rifo.p4i
