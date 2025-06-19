@@ -21,4 +21,4 @@ def handle(pkt):
         print(f"[{counter}] Packet received with rank={rank} from {src} -> {dst} on {cfg['iface']}")
 
 # csomagfigyeles elinditasa
-sniff(iface=cfg["iface"], prn=handle, store=0)
+sniff(iface=cfg["iface"], prn=handle, store=0, timeout=100)
